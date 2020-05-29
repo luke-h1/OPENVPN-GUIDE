@@ -10,7 +10,9 @@ Once EPEL is installed, you can install OpenVPN: yum -y install openvpn
 
 Firewall changes now need to be made:
 
-[root@Server1]# firewall-cmd --permanent --add-port=1194/tcp [root@Server1]# firewall-cmd --permanent --add-masquerade [root@Server1]# firewall-cmd --reload
+firewall-cmd --permanent --add-port=1194/tcp
+firewall-cmd --permanent --add-masquerade
+firewall-cmd --reload
 
 Create Keys and Credentials on OPENVPN-SERVER use EasyRSA to create and sign the keys for the server and client. Install it with this:
 
@@ -62,12 +64,14 @@ Type yes when prompted, and enter the same passwprd you entered for the server c
 
 generate the TLS key:
 
-cd /etc/openvpn openvpn --genkey --secret pfs.key
+cd /etc/openvpn
+openvpn --genkey --secret pfs.key
 
 Configure the OpenVPN Server on OPENVPN-SERVER You'll need to create and edit /etc/openvpn/server.conf:
 
 vim /etc/openvpn/server.conf
 
+port 1194
 proto tcp
 dev tun
 ca /etc/openvpn/easy-rsa/pki/ca.crt
@@ -90,7 +94,7 @@ status openvpn-status.log
 log-append openvpn.log
 verb 3
 tls-server
-tls-auth /etc/openvpn/pfs.key```
+tls-auth /etc/openvpn/pfs.key
 
 Enable & start openvpn via systemd systemctl enable openvpn@server.service systemctl start openvpn@server.service
 
@@ -175,3 +179,6 @@ verify the entry using:
 
 ip route show
 
+you should now be able to access the website on node1:
+
+curl 10.0.1.20
