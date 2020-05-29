@@ -1,8 +1,5 @@
 OPENVPN setup & configuration (Centos 7)
 
-Virtual Private Networks (VPNs) are very useful, whether you’re traveling the world or just using public WI-FI . You don’t necessarily have to pay for a VPN service — you could host your own VPN server at home.
-
-Your home Internet connection’s upload speed will really matter here. If you don’t have much upload bandwidth, you may just want to use a paid VPN service. Internet service providers usually offer much less upload bandwidth than they do download bandwidth. Still, if you do have the bandwidth, setting up a VPN server at home might be just the right thing for you.
 
 The server in this article has a hostname of: OPENVPN-SERVER and the client has a hostname of CLIENT_CENTOS. This is for clarity and you can name your openvpn server & client whatever you wish.
 
