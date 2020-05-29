@@ -1,74 +1,84 @@
-In order to install the OpenVPN package, we'll first need to install the EPEL repo:
+###simple OVPN setup / guide 
+
+
+In order to install the OpenVPN package, you first need to install the EPEL repo:
+
 ```[root@Server1]# yum -y install epel-release```
-Once EPEL is installed, we can go ahead with installing OpenVPN:
+
+Once EPEL is installed, you can install OpenVPN:
 ```[root@Server1]# yum -y install openvpn```
-Let's enable masquerading in the firewall, and then reload things so the changes take effect:
+
+
+Firewall changes now need to be made: 
 ```
 [root@Server1]# firewall-cmd --permanent --add-port=1194/tcp
 [root@Server1]# firewall-cmd --permanent --add-masquerade
 [root@Server1]# firewall-cmd --reload
 ```
 
-Create Keys and Credentials on `Server1`
-We'll use EasyRSA to create and sign the keys for the server and client. Install it with this:
+Create Keys and Credentials on `OPENVPN-SERVER`
+use EasyRSA to create and sign the keys for the server and client. Install it with this:
 
-```[root@Server1]# yum -y install easy-rsa```
+```yum -y install easy-rsa```
 
-Create a directory to hold the files we'll create:
+Create a directory to hold the files you'll create:
 
-```[root@Server1]# mkdir /etc/openvpn/easy-rsa```
+```mkdir /etc/openvpn/easy-rsa```
 
-and change our working directory to it:
+and change to the directory...
 
-```[root@Server1]# cd /etc/openvpn/easy-rsa```
+```cd /etc/openvpn/easy-rsa```
 
-To make things a littler easier, let's append the EasyRSA executable folder to our current path:
+To make things easier,append the EasyRSA executable folder to our current path:
 
-```[root@Server1]# PATH=$PATH:/usr/share/easy-rsa/3.0.7/```
+```PATH=$PATH:/usr/share/easy-rsa/3.0.7/```
 
 Initialize PKI:
 
-```[root@Server1]# easyrsa init-pki```
+```easyrsa init-pki```
 
 Build the CA (remember the password you use, you can leave the common name as the default):
 
-```[root@Server1]# easyrsa build-ca```
+```easyrsa build-ca```
 
 Generate a Diffie-Hellman key for forward secrecy:
 
-```[root@Server1]# easyrsa gen-dh```
-Now we'll move on to the server credentials. For convenience, we won’t password protect these.
+```easyrsa gen-dh```
+
+Now move on to the server credentials. 
 
 Create the server certificate:
 
-```[root@Server1]# easyrsa gen-req server nopass```
+```easyrsa gen-req server nopass```
 
 Sign the server certificate:
 
-```[root@Server1]# easyrsa sign-req server server```
+```easyrsa sign-req server server```
 
-We'll be prompted to type yes here. There's also a spot in here where we've got to enter the password we created a few steps back, with the easyrsa init-pki command.
 
 Create the client certificate:
 
-```[root@Server1]# easyrsa gen-req client nopass```
+```easyrsa gen-req client nopass```
 
 Sign the client certificate:
 
-```[root@Server1]# easyrsa sign-req client client```
+```easyrsa sign-req client client```
 
-Type yes when prompted, and enter the same pass we did for the server creation.
-Now we need to generate the TLS key:
+Type yes when prompted, and enter the same passwprd you entered for the server config 
+
+generate the TLS key:
 ```
-[root@Server1]# cd /etc/openvpn
-[root@Server1]# openvpn --genkey --secret pfs.key
+cd /etc/openvpn
+openvpn --genkey --secret pfs.key
 ```
 
-Configure the OpenVPN Server on `Server1`
+Configure the OpenVPN Server on `OPENVPN-SERVER`
 You'll need to create and edit /etc/openvpn/server.conf:
 
 ```
-[root@Server1]# vim /etc/openvpn/server.conf
+vim /etc/openvpn/server.conf
+```
+```
 port 1194
 proto tcp
 dev tun
@@ -92,17 +102,19 @@ status openvpn-status.log
 log-append openvpn.log
 verb 3
 tls-server
-tls-auth /etc/openvpn/pfs.key```
+tls-auth /etc/openvpn/pfs.key
+```
+Enable & start openvpn via systemd 
+```systemctl enable openvpn@server.service```
+```systemctl start openvpn@server.service```
 
-```[root@Server1]# systemctl enable openvpn@server.service```
-```[root@Server1]# systemctl start openvpn@server.service```
+Package up Keys and Certificates on `OPENVPN-SERVER` for Copying to `CLIENT_UBUNTU`
 
-Package up Keys and Certificates on `Server1` for Copying to `Client1`
-You'll need to package up the credentials we created, and copy them to Client1, you can do 
+You'll need to package up the credentials you created, and copy them to CLIENT_UBUNTU, you can do 
 this by creating the following shell script:
 
-```[root@Server1]# vim keys.sh
-
+```vim keys.sh```
+```
 cd /etc/openvpn
 mkdir -p server1/keys
 cp pfs.key server1/keys
@@ -111,39 +123,52 @@ cp easy-rsa/pki/ca.crt server1/keys
 cp easy-rsa/pki/private/ca.key server1/keys
 cp easy-rsa/pki/private/client.key server1/keys
 cp easy-rsa/pki/issued/client.crt server1/keys
-tar cvzf /tmp/keys.tgz server1/```
+tar cvzf /root/keys.tgz OPENVPN-SERVER/```
+```
+
 Make it executable:
-```[root@Server1]# chmod +x keys.sh```
+```chmod 700 keys.sh```
 
 And run it:
 
-```[root@Server1]# ./keys.sh```
+```./keys.sh```
 
-Install OpenVPN on `Client1`
+Install OpenVPN on `CLIENT_UBUNTU` : 
 
-Just like on Server1, you'll need to install EPEL before you can install OpenVPN:
+Just like on OPENVPN_SERVER, you'll need to install EPEL before you can install OpenVPN:
 
-```[root@Client1]# yum -y install epel-release
-[root@Client1]# yum -y install openvpn```
+```
+yum -y install epel-release
+yum -y install openvpn
+```
 
-Copy and Install Keys from `Server1` to `Client1`
+Copy and Install Keys from `OPENVPN_SERVER` to `CLIENT_UBUNTU`
 
-Now we need to copy the keys we tarred up on Server1 over to Client1.
+Now you need to copy the keys you tar balled up on OPENVPN_SERVER over to CLIENT_UBUNTU
 
-On Client1:
+On CLIENT_UBUNTU : 
 
-```[root@Client1]# cd /etc/openvpn`
-[root@Client1]# scp cloud_user@10.0.1.10:/tmp/keys.tgz ./```
-We'll need the password for Server1 at that point. Once the tar file makes the trip, we can extract it:
-```[root@Client1]# tar xvzf keys.tgz```
-check_circleConfigure the VPN client on `Client1`
+```cd /etc/openvpn
+```
 
-With the keys in place, we can configure the client:
+```
+scp root@<YOUR_SERVER_IP_HERE>:/root/keys.tgz ./
+```
 
-```[root@Client1]# vim client.conf
+
+```tar -xvzf keys.tgz
+```
+
+
+Configure the VPN client on `CLIENT_UBUNTU`
+
+With the keys in place, you can now configure the client:
+
+```vim client.conf```
+```
 client
 dev tun
-proto tcp
+proto udp 
 remote <tun ip address>1194  
 ca server1/keys/ca.crt
 cert server1/keys/client.crt
@@ -162,22 +187,26 @@ ns-cert-type server
 comp-lzo
 verb 3
 tls-client
-tls-auth server1/keys/pfs.key```
+tls-auth server1/keys/pfs.key
+```
 
-Start the Client:
+Start & enable the Client:
 
-```[root@Client1]# systemctl start openvpn@client.service```
+```
+systemctl start openvpn@client.service
+systemctl enable openvpn@client.service
+```
 
-Add a Static Route on Client1
+Add a Static Route on CLIENT_UBUNTU
 
-In order to have Client1 traffic to node1 originate on the 10.8.0.0/24 network, we'll need to add a static route, so that the VPN tunnel is the interface that connects to that host:
+In order to have CLIENT_UBUNTU traffic to node1 originate on the 10.8.0.0/24 network, you'll need to add a static route, so that the VPN tunnel is the interface that connects to that host:
 
-```[root@Client1]# ip route add 10.0.1.20 dev tun0```
+```ip route add 10.0.1.20 dev tun0```
 
-We can can verify the entry using:
+verify the entry using:
 
-```[root@Client1]# ip route show```
+``` ip route show```
 
-We should now be able to access the website on node1:
+you should now be able to access the website on node1:
 
 ```[root@Client1]# curl 10.0.1.20```
