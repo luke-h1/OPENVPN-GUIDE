@@ -1,5 +1,4 @@
 
-
 In order to install the OpenVPN package, you first need to install the EPEL repo:
 
 
@@ -110,9 +109,9 @@ Enable & start openvpn via systemd
 ```systemctl enable openvpn@server.service```
 ```systemctl start openvpn@server.service```
 
-Package up Keys and Certificates on `OPENVPN-SERVER` for Copying to `CLIENT_UBUNTU`
+Package up Keys and Certificates on `OPENVPN-SERVER` for Copying to `CLIENT_CENTOS`
 
-You'll need to package up the credentials you created, and copy them to CLIENT_UBUNTU, you can do 
+You'll need to package up the credentials you created, and copy them to CLIENT_CENTOS, you can do 
 this by creating the following shell script:
 
 ```vim keys.sh```
@@ -135,7 +134,7 @@ And run it:
 
 ```./keys.sh```
 
-Install OpenVPN on `CLIENT_UBUNTU` : 
+Install OpenVPN on `CLIENT_CENTOS` : 
 
 Just like on OPENVPN-SERVER, you'll need to install EPEL before you can install OpenVPN:
 
@@ -144,11 +143,11 @@ yum -y install epel-release
 yum -y install openvpn
 ```
 
-Copy and Install Keys from `OPENVPN-SERVER` to `CLIENT_UBUNTU`
+Copy and Install Keys from `OPENVPN-SERVER` to `CLIENT_CENTOS`
 
-Now you need to copy the keys you tar balled up on OPENVPN_SERVER over to CLIENT_UBUNTU
+Now you need to copy the keys you tar balled up on OPENVPN_SERVER over to CLIENT_CENTOS
 
-On CLIENT_UBUNTU : 
+On CLIENT_CENTOS : 
 
 ```cd /etc/openvpn
 ```
@@ -162,7 +161,7 @@ scp root@<YOUR_SERVER_IP_HERE>:/root/keys.tgz ./
 ```
 
 
-Configure the VPN client on `CLIENT_UBUNTU`
+Configure the VPN client on `CLIENT_CENTOS`
 
 With the keys in place, you can now configure the client:
 
@@ -199,9 +198,9 @@ systemctl start openvpn@client.service
 systemctl enable openvpn@client.service
 ```
 
-Add a Static Route on CLIENT_UBUNTU
+Add a Static Route on CLIENT_CENTOS
 
-In order to have CLIENT_UBUNTU traffic to node1 originate on the 10.8.0.0/24 network, you'll need to add a static route, so that the VPN tunnel is the interface that connects to that host:
+In order to have CLIENT_CENTOS traffic to node1 originate on the 10.8.0.0/24 network, you'll need to add a static route, so that the VPN tunnel is the interface that connects to that host:
 
 ```ip route add 10.0.1.20 dev tun0```
 
