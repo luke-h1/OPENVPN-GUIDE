@@ -13,9 +13,9 @@ Once EPEL is installed, you can install OpenVPN:
 
 Firewall changes now need to be made: 
 ```
-[root@Server1]# firewall-cmd --permanent --add-port=1194/tcp
-[root@Server1]# firewall-cmd --permanent --add-masquerade
-[root@Server1]# firewall-cmd --reload
+firewall-cmd --permanent --add-port=1194/tcp
+firewall-cmd --permanent --add-masquerade
+firewall-cmd --reload
 ```
 
 Create Keys and Credentials on `OPENVPN-SERVER`
