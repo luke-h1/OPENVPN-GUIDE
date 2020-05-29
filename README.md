@@ -1,4 +1,3 @@
-###simple OVPN setup / guide 
 
 
 In order to install the OpenVPN package, you first need to install the EPEL repo:
