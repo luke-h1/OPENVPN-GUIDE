@@ -2,10 +2,13 @@
 
 In order to install the OpenVPN package, you first need to install the EPEL repo:
 
-```[root@Server1]# yum -y install epel-release```
+
+On OPENVPN-SERVER: 
+
+```yum -y install epel-release```
 
 Once EPEL is installed, you can install OpenVPN:
-```[root@Server1]# yum -y install openvpn```
+```yum -y install openvpn```
 
 
 Firewall changes now need to be made: 
@@ -134,14 +137,14 @@ And run it:
 
 Install OpenVPN on `CLIENT_UBUNTU` : 
 
-Just like on OPENVPN_SERVER, you'll need to install EPEL before you can install OpenVPN:
+Just like on OPENVPN-SERVER, you'll need to install EPEL before you can install OpenVPN:
 
 ```
 yum -y install epel-release
 yum -y install openvpn
 ```
 
-Copy and Install Keys from `OPENVPN_SERVER` to `CLIENT_UBUNTU`
+Copy and Install Keys from `OPENVPN-SERVER` to `CLIENT_UBUNTU`
 
 Now you need to copy the keys you tar balled up on OPENVPN_SERVER over to CLIENT_UBUNTU
 
